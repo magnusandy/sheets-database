@@ -22,5 +22,6 @@ func main() {
 	root := initializeService();
 	http.HandleFunc("/", root.api.RootHandler)
 	http.HandleFunc("/full-data", root.api.FullDataHandler)
+	http.HandleFunc("/insert", root.api.InsertDataHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
