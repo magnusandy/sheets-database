@@ -16,3 +16,4 @@ func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
 	domain.LogIfPresent(err);
 	w.Write(json)
 }
+
