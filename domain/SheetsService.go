@@ -1,5 +1,6 @@
 package domain
 
 type SheetsService interface {
-	GetAllData(sheetId string, tableName string) []Table
+	GetAllData() []Table
+	GetAllDataForTable(tableName string) (Table, error)
 }

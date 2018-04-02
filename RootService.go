@@ -21,5 +21,6 @@ func initializeService() RootService {
 func main() {
 	root := initializeService();
 	http.HandleFunc("/", root.api.RootHandler)
+	http.HandleFunc("/full-data", root.api.FullDataHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
