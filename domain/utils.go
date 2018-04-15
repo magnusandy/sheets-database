@@ -7,3 +7,9 @@ func LogIfPresent(error error) {
 		log.Println(error)
 	}
 }
+
+func LogWithMessageIfPresent(message string, error error) {
+	if error != nil {
+		log.Printf(message+": %v", error)
+	}
+}

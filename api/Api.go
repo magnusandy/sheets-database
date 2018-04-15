@@ -4,10 +4,17 @@ import (
 	"net/http"
 	"sheets-database/domain"
 	"encoding/json"
+	"fmt"
 )
 
 type Api struct {
 	SheetService domain.SheetsService
+	AuthenticationService domain.AuthenticationService
+}
+
+func (api Api) CreateCredentialsHandler(w http.ResponseWriter, r *http.Request) {
+	link := api.AuthenticationService.CreateClientConfigLink()
+	fmt.Fprint(w, link)
 }
 
 func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
