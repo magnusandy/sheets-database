@@ -24,8 +24,9 @@ func initializeService() RootService {
 
 func main() {
 	root := initializeService();
-	http.HandleFunc("/auth-link", root.api.CreateCredentialsHandler)
 	http.HandleFunc("/", root.api.RootHandler)
+	http.HandleFunc("/auth-link", root.api.CreateCredentialsHandler)
+	http.HandleFunc("/submit-auth", root.api.CreateCredentialsHandler)
 	http.HandleFunc("/full-data", root.api.FullDataHandler)
 	http.HandleFunc("/insert", root.api.InsertDataHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))

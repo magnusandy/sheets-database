@@ -4,7 +4,8 @@ import (
 	"net/http"
 	"sheets-database/domain"
 	"encoding/json"
-	"fmt"
+	"sheets-database/api/dto"
+	"html/template"
 )
 
 type Api struct {
@@ -14,7 +15,8 @@ type Api struct {
 
 func (api Api) CreateCredentialsHandler(w http.ResponseWriter, r *http.Request) {
 	link := api.AuthenticationService.CreateClientConfigLink()
-	fmt.Fprint(w, link)
+	dto := dto.AuthPageData{link}
+	renderTemplate(w, "authLink.html", dto)
 }
 
 func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +41,11 @@ func (api Api) InsertDataHandler(w http.ResponseWriter, r *http.Request) {
 	if tableNameQuery != "" {
 		api.SheetService.InsertRowIntoTable(tableNameQuery, domain.Row{"XXX", []string{"1", "true", "NULL", "okay hosay"}})
 	}
+}
+
+func renderTemplate(w http.ResponseWriter, fileName string, data interface{}) {
+	t, _ := template.ParseFiles("templates/"+fileName)
+	t.Execute(w, data)
 }
 
 
