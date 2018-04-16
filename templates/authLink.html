@@ -1,9 +1,11 @@
-<a href="{{.AuthLink}}" target="_blank">Click to Generate Token</a>
+<a href="{{.AuthLink}}" target="_blank">Click to Generate Auth Code</a>
+<p>This will authorize this application through your Google account and create a
+client token for the server to make requests on your behalf, to edit/read your spreadsheets</p>
 
 <form action="/submit-auth">
-    Auth Token:
+    Auth Code:
     <br>
-        <input type="text" name="authToken">
+        <input type="text" name="authCode">
     <br>
     <input type="submit" value="Submit">
 </form>

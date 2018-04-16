@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"sheets-database/api/dto"
 	"html/template"
+	"sheets-database/api/dto/in"
+	"io/ioutil"
 )
 
 type Api struct {
@@ -19,6 +21,18 @@ func (api Api) CreateCredentialsHandler(w http.ResponseWriter, r *http.Request) 
 	renderTemplate(w, "authLink.html", dto)
 }
 
+func (api Api) SubmitAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
+	var authCode string = r.URL.Query().Get("authCode")
+	if authCode != "" {
+		tokenSaveError := api.AuthenticationService.SubmitClientConfig(authCode)
+		if tokenSaveError != nil {
+			renderTemplate(w, "authComplete.html", dto.AuthFailure(tokenSaveError))
+		} else {
+			renderTemplate(w, "authComplete.html", dto.AuthSuccess())
+		}
+	}
+}
+
 func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
 	b := api.SheetService.GetAllData()
 	json, err := json.Marshal(b)
@@ -27,13 +41,10 @@ func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api Api) FullDataHandler(w http.ResponseWriter, r *http.Request) {
-	var tableNameQuery string = r.URL.Query().Get("tableName")
-	if tableNameQuery != "" {
-		table, err := api.SheetService.GetAllDataForTable(tableNameQuery)
-		domain.LogIfPresent(err)
-		json, err := json.Marshal(table)
-		w.Write(json)
-	}
+	body, _ := ioutil.ReadAll(r.Body)
+	dtoIn := in.GetAllDataIn{}
+	json.Unmarshal(body, &dtoIn)
+	api.SheetService.GetAllDataForTable(dtoIn.SheetId, dtoIn.TableName);
 }
 
 func (api Api) InsertDataHandler(w http.ResponseWriter, r *http.Request) {

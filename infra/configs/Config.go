@@ -2,16 +2,24 @@ package configs
 
 type Config struct {}
 
-func (c Config) ClientSecretFileName() string {
+func (c Config) ServerSecretFileName() string {
 	return "client_secret.json"
 }
 
-func (c Config) ClientSecretFileLocation() string {
-	return "/Users/magnusandy/Documents/Programming/GO/src/sheets-database/resources/"
+func (c Config) ClientOauthFileName() string {
+	return "oauth_token.json"
 }
 
-func (c Config) ClientSecretPath() string {
-	return c.ClientSecretFileLocation() + c.ClientSecretFileName()
+func (c Config) ResourcesFolder() string {
+	return "resources/"
+}
+
+func (c Config) ServerSecretPath() string {
+	return c.ResourcesFolder() + c.ServerSecretFileName()
+}
+
+func (c Config) ClientOauthPath() string {
+	return c.ResourcesFolder() + c.ClientOauthFileName()
 }
 
 func (c Config) GoogleScopes() []string {
