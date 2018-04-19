@@ -31,4 +31,8 @@ func main() {
 	http.HandleFunc("/full-data", root.api.FullDataHandler)
 	http.HandleFunc("/insert", root.api.InsertDataHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
+	//insert
+	//update
+	//delete
+	//find
 }
