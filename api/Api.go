@@ -34,7 +34,7 @@ func (api Api) SubmitAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
-	b := api.SheetService.GetAllData()
+	b := api.SheetService.GetAllData("nil")
 	json, err := json.Marshal(b)
 	domain.LogIfPresent(err);
 	w.Write(json)
@@ -44,7 +44,10 @@ func (api Api) FullDataHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 	dtoIn := in.GetAllDataIn{}
 	json.Unmarshal(body, &dtoIn)
-	api.SheetService.GetAllDataForTable(dtoIn.SheetId, dtoIn.TableName);
+	value, _ := api.SheetService.GetAllDataForTable(dtoIn.SheetId, dtoIn.TableName);
+	json, err := json.Marshal(value)
+	domain.LogIfPresent(err)
+	w.Write(json)
 }
 
 func (api Api) InsertDataHandler(w http.ResponseWriter, r *http.Request) {

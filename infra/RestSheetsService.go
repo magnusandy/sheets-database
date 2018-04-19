@@ -16,7 +16,7 @@ type RestSheetsService struct {
 	AuthService domain.AuthenticationService
 }
 
-func (r RestSheetsService) GetAllData() []domain.Table {
+func (r RestSheetsService) GetAllData(sheetId string) []domain.Table {
 	_, err := r.createSheetsClient()
 	domain.LogIfPresent(err)
 	return nil
@@ -44,10 +44,10 @@ func (r RestSheetsService) GetAllDataForTable(sheetId string, tableName string) 
 	log.Print(sheetId, " ",tableName)
 	sheetClient, err := r.createSheetsClient()
 	domain.LogWithMessageIfPresent("problem with sheet client connection", err)
-	values, googleError := sheetClient.Spreadsheets.Values.Get(sheetId, tableName).Do()
+	values, googleError := sheetClient.Spreadsheets.Values.Get(sheetId, tableName).MajorDimension("ROWS").Do()
 	domain.LogWithMessageIfPresent("google sheets error", googleError)
 	log.Print(values)
-	return domain.Table{}, nil
+	return deserializeValueRangeToDomain(values, tableName), nil
 }
 
 func deserializeBody(response *http.Response, i interface{}) {
@@ -65,4 +65,28 @@ func (service RestSheetsService) createSheetsClient() (*sheets.Service, error) {
 	} else {
 		return sheets.New(httpClient)
 	}
+}
+
+func deserializeValueRangeToDomain(valueRange *sheets.ValueRange, tableName string) domain.Table {
+	var tableRows []domain.Row
+	for _, typelessRow := range valueRange.Values {
+		typedRow := typeCastRow(typelessRow)
+		log.Print(typedRow)
+		id := typedRow[0]
+		values := make([]string, len(typedRow)-1)//dont need the first value as its already in the id
+		copy(values, typedRow[1:])
+		log.Print(values)
+		domainRow := domain.Row{id, values}
+		tableRows = append(tableRows, domainRow)
+	}
+	return domain.Table{tableName, tableRows}
+}
+
+func typeCastRow(row []interface{}) []string {
+	newRow :=  []string{}
+	for _, value := range row {
+		newVal := value.(string)
+		newRow = append(newRow, newVal)
+	}
+	return newRow
 }
