@@ -20,7 +20,6 @@ func (d DataService) GetFullData(sheetId string, tableName string) FullTable {
 }
 
 func (d DataService) toFullTable(table Table) FullTable {
-	//todo join with metadata
 	meta := d.MetadataService.GetMetadata(table.TableName)
 	rowValueMaps := []map[string]string{}
 	for _, row := range table.Rows {
