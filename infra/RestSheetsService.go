@@ -1,9 +1,6 @@
 package infra
 
 import (
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
 	"sheets-database/domain"
 	"google.golang.org/api/sheets/v4"
 	"log"
@@ -50,15 +47,8 @@ func (r RestSheetsService) GetAllDataForTable(sheetId string, tableName string) 
 	return deserializeValueRangeToDomain(values, tableName), nil
 }
 
-func deserializeBody(response *http.Response, i interface{}) {
-	bodyAsBytes, bodyReadError := ioutil.ReadAll(response.Body)
-	domain.LogIfPresent(bodyReadError)
-	unmarshalError := json.Unmarshal(bodyAsBytes, i)
-	domain.LogIfPresent(unmarshalError)
-}
-
-func (service RestSheetsService) createSheetsClient() (*sheets.Service, error) {
-	httpClient, authError := service.AuthService.GetAuthenticatedClient()
+func (r RestSheetsService) createSheetsClient() (*sheets.Service, error) {
+	httpClient, authError := r.AuthService.GetAuthenticatedClient()
 	if authError != nil {
 		domain.LogWithMessageIfPresent("http server error", authError)
 		return nil, authError

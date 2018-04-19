@@ -1,5 +1,7 @@
 package metadata
 
+const ID_COLUMN string = "id"
+
 type MetadataService interface {
 	GetMetadata(tableName string) TableMetadata
 }
@@ -17,7 +19,7 @@ func CreateStubMetadata() *StubMetadataService {
 	users := TableMetadata{
 		"users",
 		[]ColumnMetadata{
-			ColumnMetadata{"id", TEXT, "", false},
+			ColumnMetadata{ID_COLUMN, TEXT, "", false},
 			ColumnMetadata{"name", TEXT, "-", false},
 			ColumnMetadata{"is_cool", BOOL, "false", false},
 			ColumnMetadata{"age", NUMBER, "18", false},

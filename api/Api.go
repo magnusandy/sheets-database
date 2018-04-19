@@ -8,10 +8,11 @@ import (
 	"html/template"
 	"sheets-database/api/dto/in"
 	"io/ioutil"
+	"sheets-database/domain/metadata"
 )
 
 type Api struct {
-	SheetService domain.SheetsService
+	DataService domain.DataService
 	AuthenticationService domain.AuthenticationService
 }
 
@@ -34,27 +35,30 @@ func (api Api) SubmitAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
-	b := api.SheetService.GetAllData("nil")
-	json, err := json.Marshal(b)
-	domain.LogIfPresent(err);
-	w.Write(json)
+	w.Write(nil)//todo help page?
 }
 
-func (api Api) FullDataHandler(w http.ResponseWriter, r *http.Request) {
+func (api Api) SelectHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
-	dtoIn := in.GetAllDataIn{}
+	dtoIn := in.SelectDto{}
 	json.Unmarshal(body, &dtoIn)
-	value, _ := api.SheetService.GetAllDataForTable(dtoIn.SheetId, dtoIn.TableName);
-	json, err := json.Marshal(value)
-	domain.LogIfPresent(err)
-	w.Write(json)
+	if dtoIn.Format == "" || dtoIn.Format == metadata.LIST {
+		tableData := api.DataService.GetListData(dtoIn.SheetId, dtoIn.TableName);
+		json, err := json.Marshal(tableData)
+		domain.LogIfPresent(err)
+		w.Write(json)
+	} else if dtoIn.Format == metadata.FULL {
+		tableData := api.DataService.GetFullData(dtoIn.SheetId, dtoIn.TableName);
+		//fromDomain and use dtos
+		json, err := json.Marshal(tableData)
+		domain.LogIfPresent(err)
+		w.Write(json)
+	}
+
 }
 
 func (api Api) InsertDataHandler(w http.ResponseWriter, r *http.Request) {
-	var tableNameQuery string = r.URL.Query().Get("tableName")
-	if tableNameQuery != "" {
-		api.SheetService.InsertRowIntoTable(tableNameQuery, domain.Row{"XXX", []string{"1", "true", "NULL", "okay hosay"}})
-	}
+	//todo
 }
 
 func renderTemplate(w http.ResponseWriter, fileName string, data interface{}) {
