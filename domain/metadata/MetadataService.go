@@ -15,19 +15,19 @@ func (m StubMetadataService) GetMetadata(tableName string) TableMetadata {
 	return m.allMetadata[tableName]
 }
 
-func CreateStubMetadata() *StubMetadataService {
-	users := TableMetadata{
+func CreateStubMetadata() StubMetadataService {
+	users := CreateTableMetadata(
 		"users",
 		[]ColumnMetadata{
-			ColumnMetadata{ID_COLUMN, TEXT, "", false},
-			ColumnMetadata{"name", TEXT, "-", false},
-			ColumnMetadata{"is_cool", BOOL, "false", false},
-			ColumnMetadata{"age", NUMBER, "18", false},
-		},
-	}
+			CreateColumnMetadata(ID_COLUMN, TEXT, "", false),
+			CreateColumnMetadata("name", TEXT, "-", false),
+			CreateColumnMetadata("is_cool", BOOL, "false", false),
+			CreateColumnMetadata("age", NUMBER, "18", false),
+		})
+
 	stubService := StubMetadataService{}
 	stubService.allMetadata = map[string]TableMetadata{
-		users.TableName: users,
-	};
-	return &stubService
+		users.GetTableName(): users,
+	}
+	return stubService
 }

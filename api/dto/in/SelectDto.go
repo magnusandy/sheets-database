@@ -8,5 +8,4 @@ type SelectDto struct {
 	Format metadata.ResultFormat //nullable
 	//todo limit
 	//todo offset
-	//todo mapOrList for values
 }

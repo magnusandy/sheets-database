@@ -1,14 +1,18 @@
 package metadata
 
 type TableMetadata struct {
-	TableName string
-	Columns []ColumnMetadata
+	tableName string
+	columns   []ColumnMetadata
 }
 
-type ColumnMetadata struct {
-	ColumnName string
-	Type ColumnType
-	Default string //todo check that the default fits the type //CAN BE nil
-	Nullable bool
-	//length?
+func CreateTableMetadata(tableName string, columns []ColumnMetadata) TableMetadata {
+	return TableMetadata{tableName, columns}
+}
+
+func (t TableMetadata) GetTableName() string {
+	return t.tableName
+}
+
+func (t TableMetadata) GetColumns() []ColumnMetadata {
+	return t.columns
 }

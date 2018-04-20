@@ -9,6 +9,7 @@ import (
 	"sheets-database/api/dto/in"
 	"io/ioutil"
 	"sheets-database/domain/metadata"
+	"sheets-database/api/dto/out"
 )
 
 type Api struct {
@@ -44,13 +45,14 @@ func (api Api) SelectHandler(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(body, &dtoIn)
 	if dtoIn.Format == "" || dtoIn.Format == metadata.LIST {
 		tableData := api.DataService.GetListData(dtoIn.SheetId, dtoIn.TableName);
-		json, err := json.Marshal(tableData)
+		dtoOut := out.TableDtoFromDomain(tableData)
+		json, err := json.Marshal(dtoOut)
 		domain.LogIfPresent(err)
 		w.Write(json)
 	} else if dtoIn.Format == metadata.FULL {
 		tableData := api.DataService.GetFullData(dtoIn.SheetId, dtoIn.TableName);
-		//fromDomain and use dtos
-		json, err := json.Marshal(tableData)
+		outDto := out.FullTableDtoFromDomain(tableData)
+		json, err := json.Marshal(outDto)
 		domain.LogIfPresent(err)
 		w.Write(json)
 	}

@@ -1,7 +1,9 @@
 package domain
 
+import "sheets-database/domain/tables"
+
 type SheetsService interface {
-	GetAllData(sheetId string) []Table
-	GetAllDataForTable(sheetId string, tableName string) (Table, error)
-	InsertRowIntoTable(tableName string, row Row) error
+	GetAllData(sheetId string) []tables.Table
+	GetAllDataForTable(sheetId string, tableName string) (tables.Table, error)
+	InsertRowIntoTable(tableName string, row tables.Row) error
 }

@@ -4,6 +4,7 @@ import (
 	"sheets-database/domain"
 	"google.golang.org/api/sheets/v4"
 	"log"
+	"sheets-database/domain/tables"
 )
 
 //https://developers.google.com/apis-explorer/?hl=en_GB#p/sheets/v4/sheets.spreadsheets.get?spreadsheetId=1lLhDVyufI4GmiCNk3N1pibyRfQZ0nfXttLD6wKNb_Xo&fields=sheets(data(rowData(values(note%252CuserEnteredValue))))%252CspreadsheetId&_h=1&
@@ -13,7 +14,7 @@ type RestSheetsService struct {
 	AuthService domain.AuthenticationService
 }
 
-func (r RestSheetsService) GetAllData(sheetId string) []domain.Table {
+func (r RestSheetsService) GetAllData(sheetId string) []tables.Table {
 	_, err := r.createSheetsClient()
 	domain.LogIfPresent(err)
 	return nil
@@ -33,11 +34,11 @@ POST https://sheets.googleapis.com/v4/spreadsheets/1lLhDVyufI4GmiCNk3N1pibyRfQZ0
  ]
 }
  */
-func (r RestSheetsService) InsertRowIntoTable(tableName string, row domain.Row) error {
+func (r RestSheetsService) InsertRowIntoTable(tableName string, row tables.Row) error {
 	return nil
 }
 
-func (r RestSheetsService) GetAllDataForTable(sheetId string, tableName string) (domain.Table, error) {
+func (r RestSheetsService) GetAllDataForTable(sheetId string, tableName string) (tables.Table, error) {
 	log.Print(sheetId, " ",tableName)
 	sheetClient, err := r.createSheetsClient()
 	domain.LogWithMessageIfPresent("problem with sheet client connection", err)
@@ -57,8 +58,8 @@ func (r RestSheetsService) createSheetsClient() (*sheets.Service, error) {
 	}
 }
 
-func deserializeValueRangeToDomain(valueRange *sheets.ValueRange, tableName string) domain.Table {
-	var tableRows []domain.Row
+func deserializeValueRangeToDomain(valueRange *sheets.ValueRange, tableName string) tables.Table {
+	var tableRows []tables.Row
 	for _, typelessRow := range valueRange.Values {
 		typedRow := typeCastRow(typelessRow)
 		log.Print(typedRow)
@@ -66,10 +67,10 @@ func deserializeValueRangeToDomain(valueRange *sheets.ValueRange, tableName stri
 		values := make([]string, len(typedRow)-1)//dont need the first value as its already in the id
 		copy(values, typedRow[1:])
 		log.Print(values)
-		domainRow := domain.Row{id, values}
+		domainRow := tables.CreateRow(id, values)
 		tableRows = append(tableRows, domainRow)
 	}
-	return domain.Table{tableName, tableRows}
+	return tables.CreateTable(tableName, tableRows)
 }
 
 func typeCastRow(row []interface{}) []string {
