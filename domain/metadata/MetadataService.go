@@ -1,9 +1,13 @@
 package metadata
 
+import (
+	"errors"
+)
+
 const ID_COLUMN string = "id"
 
 type MetadataService interface {
-	GetMetadata(tableName string) TableMetadata
+	GetMetadata(tableName string) (TableMetadata, error)
 }
 
 //todo replace with real service
@@ -11,8 +15,12 @@ type StubMetadataService struct {
 	allMetadata map[string]TableMetadata //keyed by tablename
 }
 
-func (m StubMetadataService) GetMetadata(tableName string) TableMetadata {
-	return m.allMetadata[tableName]
+func (m StubMetadataService) GetMetadata(tableName string) (TableMetadata, error) {
+	 meta := m.allMetadata[tableName]
+	if meta.GetTableName() == "" {
+		return meta, errors.New("Table metadata not found")
+	}
+	 return meta, nil
 }
 
 func CreateStubMetadata() StubMetadataService {

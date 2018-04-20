@@ -6,6 +6,7 @@ type ColumnMetadata struct {
 	defaultVal string //todo check that the default fits the type //CAN BE nil
 	nullable   bool
 	//length?
+	//unique?
 }
 
 func CreateColumnMetadata(
@@ -24,10 +25,10 @@ func (c ColumnMetadata) GetColumnType() ColumnType {
 	return c.columnType
 }
 
-func (c ColumnMetadata) getDefault() string {
+func (c ColumnMetadata) GetDefault() string {
 	return c.defaultVal
 }
 
-func (c ColumnMetadata) isNullable() bool {
+func (c ColumnMetadata) SsNullable() bool {
 	return c.nullable
 }

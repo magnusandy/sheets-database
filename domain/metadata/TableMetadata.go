@@ -16,3 +16,11 @@ func (t TableMetadata) GetTableName() string {
 func (t TableMetadata) GetColumns() []ColumnMetadata {
 	return t.columns
 }
+
+func (t TableMetadata) GetColumnsAsMap() map[string]*ColumnMetadata {
+	returnMap := map[string]*ColumnMetadata{}
+	for _, meta := range t.GetColumns() {
+		returnMap[meta.GetColumnName()] = &meta
+	}
+	return returnMap
+}

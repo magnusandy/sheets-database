@@ -13,7 +13,7 @@ import (
 )
 
 type Api struct {
-	DataService domain.DataService
+	DataService           domain.DataService
 	AuthenticationService domain.AuthenticationService
 }
 
@@ -36,7 +36,7 @@ func (api Api) SubmitAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write(nil)//todo help page?
+	w.Write(nil) //todo help page?
 }
 
 func (api Api) SelectHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,13 +60,16 @@ func (api Api) SelectHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api Api) InsertDataHandler(w http.ResponseWriter, r *http.Request) {
-	//todo
+	body, _ := ioutil.ReadAll(r.Body)
+	dtoIn := in.InsertDto{}
+	json.Unmarshal(body, &dtoIn)
+	err := api.DataService.InsertData(dtoIn.SheetId, dtoIn.ToDomain())
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+	}
 }
 
 func renderTemplate(w http.ResponseWriter, fileName string, data interface{}) {
-	t, _ := template.ParseFiles("templates/"+fileName)
+	t, _ := template.ParseFiles("templates/" + fileName)
 	t.Execute(w, data)
 }
-
-
-
