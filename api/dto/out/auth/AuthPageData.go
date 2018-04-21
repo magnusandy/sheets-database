@@ -1,4 +1,4 @@
-package dto
+package auth
 
 type AuthPageData struct {
 	AuthLink string

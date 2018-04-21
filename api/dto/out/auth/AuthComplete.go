@@ -1,4 +1,4 @@
-package dto
+package auth
 
 type AuthComplete struct {
 	Status string

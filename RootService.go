@@ -18,7 +18,7 @@ func initializeService() RootService {
 	authenticationService := infra.RestAuthenticationService{Config:configs.Config{}}
 	sheetService := infra.RestSheetsService{authenticationService}
 	metadataService := metadata.CreateStubMetadata()
-	dataService := domain.DataService{sheetService, metadataService}
+	dataService := domain.CreateDataService(sheetService, metadataService)
 	return RootService{
 		api.Api{DataService: dataService,
 		AuthenticationService: authenticationService,
@@ -29,6 +29,8 @@ func initializeService() RootService {
 func main() {
 	root := initializeService();
 	http.HandleFunc("/", root.api.RootHandler)//todo serve help page
+	//help
+	//stats
 
 	http.HandleFunc("/auth-link", root.api.CreateCredentialsHandler)
 	http.HandleFunc("/submit-auth", root.api.SubmitAuthCodeHandler)
@@ -45,8 +47,9 @@ func main() {
 
 	//create-table
 	//update-table
+
 	//metadata-json
-	//metadata stats html page
+	//metadata html page
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
