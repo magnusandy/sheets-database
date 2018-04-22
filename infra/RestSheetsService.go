@@ -11,7 +11,11 @@ import (
 const GET_ALL_DATA_FIELD_FILTER = "sheets(data(rowData(values(note,userEnteredValue))),properties(sheetId,title)),spreadsheetId"
 
 type RestSheetsService struct {
-	AuthService domain.AuthenticationService
+	authService domain.AuthenticationService
+}
+
+func CreateRestSheetService(authService domain.AuthenticationService) domain.SheetsService {
+	return RestSheetsService{authService}
 }
 
 func (r RestSheetsService) GetAllData(sheetId string) []tables.Table {
@@ -49,7 +53,7 @@ func (r RestSheetsService) GetAllDataForTable(sheetId string, tableName string) 
 }
 
 func (r RestSheetsService) createSheetsClient() (*sheets.Service, error) {
-	httpClient, authError := r.AuthService.GetAuthenticatedClient()
+	httpClient, authError := r.authService.GetAuthenticatedClient()
 	if authError != nil {
 		domain.LogWithMessageIfPresent("http server error", authError)
 		return nil, authError

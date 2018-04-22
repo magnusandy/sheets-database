@@ -13,8 +13,12 @@ import (
 )
 
 type Api struct {
-	DataService           domain.DataService
-	AuthenticationService domain.AuthenticationService
+	dataService           domain.DataService
+	authenticationService domain.AuthenticationService
+}
+
+func CreateApi(dataService domain.DataService, authenticationService domain.AuthenticationService) Api {
+	return Api{dataService, authenticationService}
 }
 
 func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +26,7 @@ func (api Api) RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api Api) CreateCredentialsHandler(w http.ResponseWriter, r *http.Request) {
-	link := api.AuthenticationService.CreateClientConfigLink()
+	link := api.authenticationService.CreateClientConfigLink()
 	dto := auth.AuthPageData{link}
 	renderTemplate(w, "authLink.html", dto)
 }
@@ -30,7 +34,7 @@ func (api Api) CreateCredentialsHandler(w http.ResponseWriter, r *http.Request) 
 func (api Api) SubmitAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
 	var authCode string = r.URL.Query().Get("authCode")
 	if authCode != "" {
-		tokenSaveError := api.AuthenticationService.SubmitClientConfig(authCode)
+		tokenSaveError := api.authenticationService.SubmitClientConfig(authCode)
 
 		dto := auth.AuthSuccess()
 		if tokenSaveError != nil {
@@ -46,10 +50,10 @@ func (api Api) SelectHandler(w http.ResponseWriter, r *http.Request) {
 	readBodyIntoDto(r, dtoIn)
 
 	if dtoIn.Format == "" || dtoIn.Format == metadata.LIST {
-		tableData := api.DataService.GetListData(dtoIn.SheetId, dtoIn.TableName);
+		tableData := api.dataService.GetListData(dtoIn.SheetId, dtoIn.TableName);
 		writeResponse(w, out.TableDtoFromDomain(tableData))
 	} else if dtoIn.Format == metadata.FULL {
-		tableData := api.DataService.GetFullData(dtoIn.SheetId, dtoIn.TableName);
+		tableData := api.dataService.GetFullData(dtoIn.SheetId, dtoIn.TableName);
 		writeResponse(w, out.FullTableDtoFromDomain(tableData))
 	}
 }
@@ -59,7 +63,7 @@ func (api Api) InsertDataHandler(w http.ResponseWriter, r *http.Request) {
 	dtoIn := in.InsertDto{}
 	readBodyIntoDto(r, dtoIn)
 
-	err := api.DataService.InsertData(dtoIn.SheetId, dtoIn.ToDomain())
+	err := api.dataService.InsertData(dtoIn.SheetId, dtoIn.ToDomain())
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 	}

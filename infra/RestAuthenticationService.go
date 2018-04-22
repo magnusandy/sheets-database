@@ -13,7 +13,11 @@ import (
 )
 
 type RestAuthenticationService struct {
-	Config configs.Config
+	config configs.Config
+}
+
+func CreateRestAuthenticationService(config configs.Config) domain.AuthenticationService{
+	return RestAuthenticationService{config}
 }
 
 func (service RestAuthenticationService) CreateClientConfigLink() string {
@@ -43,15 +47,15 @@ func (service RestAuthenticationService) GetAuthenticatedClient() (*http.Client,
 }
 
 func (service RestAuthenticationService) configFromServerSecretFile(ctx context.Context) *oauth2.Config {
-	fileByteArray, fileError := ioutil.ReadFile(service.Config.ServerSecretPath())
+	fileByteArray, fileError := ioutil.ReadFile(service.config.ServerSecretPath())
 	domain.LogWithMessageIfPresent("Unable to read client secret file", fileError);
-	config, parseError := google.ConfigFromJSON(fileByteArray, service.Config.GoogleScopes()...)
+	config, parseError := google.ConfigFromJSON(fileByteArray, service.config.GoogleScopes()...)
 	domain.LogWithMessageIfPresent("Unable to parse client secret file to config", parseError)
 	return config
 }
 
 func (service RestAuthenticationService) clientTokenFromFile() (*oauth2.Token, error) {
-	oauthFile, err := os.Open(service.Config.ClientOauthPath())
+	oauthFile, err := os.Open(service.config.ClientOauthPath())
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +66,7 @@ func (service RestAuthenticationService) clientTokenFromFile() (*oauth2.Token, e
 }
 
 func (service RestAuthenticationService) saveClientOauthToken(token *oauth2.Token) error {
-	file, err := os.OpenFile(service.Config.ClientOauthPath(), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	file, err := os.OpenFile(service.config.ClientOauthPath(), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		domain.LogWithMessageIfPresent("problem saving oauth file", err)
 		return err

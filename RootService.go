@@ -14,21 +14,18 @@ type RootService struct {
 	api api.Api
 }
 
-func initializeService() RootService {
-	authenticationService := infra.RestAuthenticationService{Config:configs.Config{}}
-	sheetService := infra.RestSheetsService{authenticationService}
+func initializeRootService() RootService {
+	authenticationService := infra.CreateRestAuthenticationService(configs.Config{})
+	sheetService := infra.CreateRestSheetService(authenticationService)
 	metadataService := metadata.CreateStubMetadata()
 	dataService := domain.CreateDataService(sheetService, metadataService)
-	return RootService{
-		api.Api{DataService: dataService,
-		AuthenticationService: authenticationService,
-		},
-	}
+	api := api.CreateApi(dataService, authenticationService)
+	return RootService{api}
 }
 
 func main() {
-	root := initializeService();
-	http.HandleFunc("/", root.api.RootHandler)//todo serve help page
+	root := initializeRootService();
+	http.HandleFunc("/", root.api.RootHandler) //todo serve help page
 	//help
 	//stats
 
