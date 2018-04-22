@@ -4,7 +4,6 @@ import (
 	"sheets-database/domain"
 	"google.golang.org/api/sheets/v4"
 	"sheets-database/domain/tables"
-	"log"
 )
 
 //https://developers.google.com/apis-explorer/?hl=en_GB#p/sheets/v4/sheets.spreadsheets.get?spreadsheetId=1lLhDVyufI4GmiCNk3N1pibyRfQZ0nfXttLD6wKNb_Xo&fields=sheets(data(rowData(values(note%252CuserEnteredValue))))%252CspreadsheetId&_h=1&
@@ -71,8 +70,6 @@ func deserializeValueRangeToDomain(valueRange *sheets.ValueRange, tableName stri
 }
 
 func serializeValueRange(table tables.Table) *sheets.ValueRange {
-	log.Print("tableData")
-	log.Print(table)
 	outValues := [][]interface{}{}
 	for _, row := range table.GetRows() {
 		outValues = append(outValues, serializeRow(row))
@@ -84,8 +81,6 @@ func serializeValueRange(table tables.Table) *sheets.ValueRange {
 		Values:         outValues,
 	}
 
-	log.Print("valueRange")
-	log.Print(valueRange)
 	return &valueRange
 }
 

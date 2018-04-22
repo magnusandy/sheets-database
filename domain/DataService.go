@@ -4,7 +4,6 @@ import "sheets-database/domain/metadata"
 import (
 	"sheets-database/domain/tables"
 	"errors"
-	"log"
 )
 
 type DataService struct {
@@ -83,7 +82,5 @@ func (d DataService) convertToFullTable(sheetId string, table tables.Table) tabl
 func (d DataService) convertToListTable(sheetId string, fullTable tables.FullTable) tables.Table {
 	meta, err := d.metadataService.GetMetadata(sheetId, fullTable.GetTableName())
 	LogIfPresent(err) //todo handle error better
-	log.Print("full table before convert")
-	log.Print(fullTable)
 	return fullTable.ToTable(meta)
 }
