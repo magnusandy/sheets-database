@@ -7,24 +7,25 @@ import (
 const ID_COLUMN string = "id"
 
 type MetadataService interface {
-	GetMetadata(tableName string) (TableMetadata, error)
+	GetMetadata(sheetId string, tableName string) (TableMetadata, error)
 }
 
 //todo replace with real service
 type StubMetadataService struct {
-	allMetadata map[string]TableMetadata //keyed by tablename
+	allMetadata map[string]map[string]TableMetadata //keyed by sheetid, and then tablename
 }
 
-func (m StubMetadataService) GetMetadata(tableName string) (TableMetadata, error) {
-	 meta := m.allMetadata[tableName]
+func (m StubMetadataService) GetMetadata(sheetId string, tableName string) (TableMetadata, error) {
+	meta := m.allMetadata[sheetId][tableName]
 	if meta.GetTableName() == "" {
 		return meta, errors.New("Table metadata not found")
 	}
-	 return meta, nil
+	return meta, nil
 }
 
 func CreateStubMetadata() StubMetadataService {
 	users := CreateTableMetadata(
+		"1lLhDVyufI4GmiCNk3N1pibyRfQZ0nfXttLD6wKNb_Xo",
 		"users",
 		[]ColumnMetadata{
 			CreateColumnMetadata(ID_COLUMN, TEXT, "", false),
@@ -33,9 +34,11 @@ func CreateStubMetadata() StubMetadataService {
 			CreateColumnMetadata("age", NUMBER, "18", false),
 		})
 
-	stubService := StubMetadataService{}
-	stubService.allMetadata = map[string]TableMetadata{
+	table := map[string]TableMetadata{
 		users.GetTableName(): users,
 	}
-	return stubService
+	sheetIdMap := map[string]map[string]TableMetadata{
+		users.GetSheetId(): table,
+	}
+	return StubMetadataService{sheetIdMap}
 }

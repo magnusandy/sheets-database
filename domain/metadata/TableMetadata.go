@@ -1,12 +1,17 @@
 package metadata
 
 type TableMetadata struct {
+	sheetId string
 	tableName string
 	columns   []ColumnMetadata
 }
 
-func CreateTableMetadata(tableName string, columns []ColumnMetadata) TableMetadata {
-	return TableMetadata{tableName, columns}
+func CreateTableMetadata(sheetId string, tableName string, columns []ColumnMetadata) TableMetadata {
+	return TableMetadata{sheetId,tableName, columns}
+}
+
+func (t TableMetadata) GetSheetId() string {
+	return t.sheetId
 }
 
 func (t TableMetadata) GetTableName() string {

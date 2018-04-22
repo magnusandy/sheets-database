@@ -1,6 +1,10 @@
 package in
 
-import "sheets-database/domain/tables"
+import (
+	"sheets-database/domain/tables"
+	"sheets-database/domain/metadata"
+	"github.com/google/uuid"
+)
 
 type InsertDto struct {
 	SheetId string
@@ -10,5 +14,14 @@ type InsertDto struct {
 }
 
 func (i InsertDto) ToDomain() tables.FullTable {
-	return tables.CreateFullTable(i.TableName, i.Data)
+	withIds := i.attachIds()
+	return tables.CreateFullTable(withIds.TableName, withIds.Data)
+}
+
+//todo should this be in the domain?
+func (i InsertDto) attachIds() InsertDto {
+	for _, rowMap := range i.Data {
+		rowMap[metadata.ID_COLUMN] = uuid.New().String()
+	}
+	return i
 }

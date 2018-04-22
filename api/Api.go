@@ -47,7 +47,7 @@ func (api Api) SubmitAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
 func (api Api) SelectHandler(w http.ResponseWriter, r *http.Request) {
 
 	dtoIn := in.SelectDto{}
-	readBodyIntoDto(r, dtoIn)
+	readBodyIntoDto(r, &dtoIn)
 
 	if dtoIn.Format == "" || dtoIn.Format == metadata.LIST {
 		tableData := api.dataService.GetListData(dtoIn.SheetId, dtoIn.TableName);
@@ -61,11 +61,13 @@ func (api Api) SelectHandler(w http.ResponseWriter, r *http.Request) {
 func (api Api) InsertDataHandler(w http.ResponseWriter, r *http.Request) {
 
 	dtoIn := in.InsertDto{}
-	readBodyIntoDto(r, dtoIn)
+	readBodyIntoDto(r, &dtoIn)
 
 	err := api.dataService.InsertData(dtoIn.SheetId, dtoIn.ToDomain())
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 

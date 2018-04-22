@@ -18,27 +18,30 @@ func CreateDataService(service SheetsService, metadataService metadata.MetadataS
 
 func (d DataService) GetListData(sheetId string, tableName string) tables.Table {
 	table, err := d.sheetsService.GetAllDataForTable(sheetId, tableName)
-	LogWithMessageIfPresent("error getting all data for table: "+tableName, err)
+	LogWithMessageIfPresent("error getting list data for table: "+tableName, err)
 	return table
 }
 
 func (d DataService) GetFullData(sheetId string, tableName string) tables.FullTable {
 	table, err := d.sheetsService.GetAllDataForTable(sheetId, tableName)
 	LogWithMessageIfPresent("error getting all data for table: "+tableName, err)
-	return d.toFullTable(table)
+	return d.convertToFullTable(sheetId, table)
 }
 
 func (d DataService) InsertData(sheetId string, unverifiedData tables.FullTable) error {
 	//todo verify against metadata
-	log.Print(unverifiedData)
-	meta, err := d.metadataService.GetMetadata(unverifiedData.GetTableName())
+	meta, err := d.metadataService.GetMetadata(sheetId, unverifiedData.GetTableName())
 	if err != nil {
 		return errors.New("Table was not found or metadata does not exist, double check the table name")
 	}
 
 	validationError := d.validateAgainstMetadata(meta, unverifiedData)
-	LogWithMessageIfPresent("VALIDATION ERROR", validationError)
-	return validationError
+	if validationError != nil {
+		LogWithMessageIfPresent("VALIDATION ERROR", validationError)
+		return validationError
+	}
+
+	return d.sheetsService.InsertRowsIntoTable(sheetId, d.convertToListTable(sheetId, unverifiedData))
 }
 
 func (d DataService) validateAgainstMetadata(tableMetadata metadata.TableMetadata, table tables.FullTable) error {
@@ -71,8 +74,16 @@ func (d DataService) validateRowAgainstMetadata(tableMetadata metadata.TableMeta
 	return nil
 }
 
-func (d DataService) toFullTable(table tables.Table) tables.FullTable {
-	meta, err := d.metadataService.GetMetadata(table.GetTableName())
+func (d DataService) convertToFullTable(sheetId string, table tables.Table) tables.FullTable {
+	meta, err := d.metadataService.GetMetadata(sheetId, table.GetTableName())
 	LogIfPresent(err) //todo handle error better
 	return table.ToFullTable(meta)
+}
+
+func (d DataService) convertToListTable(sheetId string, fullTable tables.FullTable) tables.Table {
+	meta, err := d.metadataService.GetMetadata(sheetId, fullTable.GetTableName())
+	LogIfPresent(err) //todo handle error better
+	log.Print("full table before convert")
+	log.Print(fullTable)
+	return fullTable.ToTable(meta)
 }
