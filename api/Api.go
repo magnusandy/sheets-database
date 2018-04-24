@@ -75,7 +75,15 @@ func (api Api) CreateTableHandler(w http.ResponseWriter, r *http.Request) {
 	dtoIn := in.CreateTableDto{}
 	readBodyIntoDto(r, &dtoIn)
 
-	err := api.dataService.CreateTable(dtoIn.SheetId, metadata.TableMetadata{})//todo actual dto
+	err := api.dataService.CreateTable(dtoIn.SheetId, metadata.CreateTableMetadata(
+		"1lLhDVyufI4GmiCNk3N1pibyRfQZ0nfXttLD6wKNb_Xo",
+		"users",
+		[]metadata.ColumnMetadata{
+			metadata.CreateColumnMetadata(metadata.ID_COLUMN, metadata.TEXT, "", false),
+			metadata.CreateColumnMetadata("name", metadata.TEXT, "-", false),
+			metadata.CreateColumnMetadata("is_cool", metadata.BOOL, "false", false),
+			metadata.CreateColumnMetadata("age", metadata.NUMBER, "18", false),
+		}))//todo actual dto
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	} else {

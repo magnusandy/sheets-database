@@ -46,6 +46,7 @@ func main() {
 
 	http.HandleFunc("/database-info", root.api.GetDatabaseInfoHandler)
 
+	//create-database
 	//table-info
 	//metadata html page
 

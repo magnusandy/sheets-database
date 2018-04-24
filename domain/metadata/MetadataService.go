@@ -8,7 +8,7 @@ const ID_COLUMN string = "id"
 
 type MetadataService interface {
 	GetTableMetadata(sheetId string, tableName string) (TableMetadata, error)
-	GetDatabaseMetadata(sheetId string) ([]TableMetadata, error)
+	GetDatabaseMetadata(sheetId string) (map[string]TableMetadata, error)
 	CreateMetadata(sheetId string, meta TableMetadata) error
 	UpdateMetadata(sheetId string, meta TableMetadata) error
 }

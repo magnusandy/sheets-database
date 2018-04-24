@@ -5,9 +5,15 @@ import (
 	"sheets-database/domain/metadata"
 	"google.golang.org/api/sheets/v4"
 	"log"
+	"errors"
+	"sheets-database/api/dto"
+	"encoding/json"
 )
 
 const VISIBILITY = "DOCUMENT"
+const META_ID = 1
+const META_KEY = "tableInfo"
+
 
 type RestMetadataService struct {
 	authService domain.AuthenticationService
@@ -24,30 +30,66 @@ func (r RestMetadataService) GetTableMetadata(sheetId string, tableName string) 
 }
 
 func (r RestMetadataService) CreateMetadata(sheetId string, meta metadata.TableMetadata) error {
+	//todo the logic should be in the service, this function should just delete and resave new meta
+
 	sheetClient, clientError := createSheetsClient(r.authService)
 	if clientError != nil {
 		return clientError
 	}
+	//todo fetch current meta list
+	currentMeta, getMetaErr := r.GetDatabaseMetadata(sheetId)
+	if getMetaErr != nil {
+		return getMetaErr
+	}
+	if currentMeta == nil {//if there is no current metadata
+		currentMeta = map[string]metadata.TableMetadata{}
+	}
+	existingTable := currentMeta[meta.GetTableName()]
+
+	if existingTable.GetTableName() == meta.GetTableName() { //default value if doesn't exist todo test
+		return errors.New("table name: "+meta.GetTableName()+" already exists")
+	}
+
+	log.Print(meta)
+	//add new table to the current meta
+	currentMeta[meta.GetTableName()] = meta
+
+	dtoOut := dto.MetadataListDtoFromDomain(currentMeta)
+	dtoBytes, marshalErr := json.Marshal(dtoOut)
+	if marshalErr != nil {
+		return marshalErr
+	}
+
+	//delete old meta
+	devMetaLookup := sheets.DeveloperMetadataLookup{MetadataId:META_ID}
+	dataFilter := sheets.DataFilter{DeveloperMetadataLookup:&devMetaLookup}
+	deleteDevMeta := sheets.DeleteDeveloperMetadataRequest{DataFilter:&dataFilter}
+	deleteRequest := sheets.Request{DeleteDeveloperMetadata:&deleteDevMeta}
+	deleteBatch := sheets.BatchUpdateSpreadsheetRequest{Requests:[]*sheets.Request{&deleteRequest}}
+	deleteResp, deleteErr := sheetClient.Spreadsheets.BatchUpdate(sheetId, &deleteBatch).Do()
+	if deleteErr != nil{
+		return deleteErr
+	}
+	log.Print("delete response")
+	log.Print(deleteResp)
+
 	location := sheets.DeveloperMetadataLocation{Spreadsheet:true}
 	devMeta := sheets.DeveloperMetadata{
 		Visibility:VISIBILITY,
 		Location: &location,
-		MetadataId:1,
-		MetadataKey:"metaTableInfo",
-		MetadataValue:"myMetadata",
+		MetadataId:META_ID,
+		MetadataKey:META_KEY,
+		MetadataValue:string(dtoBytes),
 	}
 	createDevMeta := sheets.CreateDeveloperMetadataRequest{DeveloperMetadata:&devMeta}
 	request := sheets.Request{CreateDeveloperMetadata:&createDevMeta}
 	batchUpdate := sheets.BatchUpdateSpreadsheetRequest{Requests:[]*sheets.Request{&request}}
 	resp, err := sheetClient.Spreadsheets.BatchUpdate(sheetId, &batchUpdate).Do()
 	log.Print(resp)
-	//todo fetch current meta list
-	//find if the value already exists
-	//save if it doesnt
 	return err
 }
 
-func (r RestMetadataService) GetDatabaseMetadata(sheetId string) ([]metadata.TableMetadata, error) {
+func (r RestMetadataService) GetDatabaseMetadata(sheetId string) (map[string]metadata.TableMetadata, error) {
 	sheetClient, clientError := createSheetsClient(r.authService)
 	if clientError != nil {
 		return nil, clientError
@@ -55,8 +97,8 @@ func (r RestMetadataService) GetDatabaseMetadata(sheetId string) ([]metadata.Tab
 
 	resp, err := sheetClient.Spreadsheets.DeveloperMetadata.Get(sheetId, 1).Do()
 	log.Print("metadata Resp")
-	log.Print(resp)
-	return nil, err
+	log.Print(resp.MetadataValue)
+	return nil, err//todo not nil
 }
 
 func (r RestMetadataService) UpdateMetadata(sheetId string, meta metadata.TableMetadata) error {

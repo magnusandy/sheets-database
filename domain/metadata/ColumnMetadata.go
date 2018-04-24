@@ -29,6 +29,6 @@ func (c ColumnMetadata) GetDefault() string {
 	return c.defaultVal
 }
 
-func (c ColumnMetadata) SsNullable() bool {
+func (c ColumnMetadata) GetNullable() bool {
 	return c.nullable
 }

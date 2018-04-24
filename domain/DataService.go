@@ -47,7 +47,7 @@ func (d DataService) CreateTable(sheetId string, createTable metadata.TableMetad
 	return d.metadataService.CreateMetadata(sheetId, createTable)
 }
 
-func (d DataService) GetDatabaseMetadata (sheetId string) ([]metadata.TableMetadata, error){
+func (d DataService) GetDatabaseMetadata (sheetId string) (map[string]metadata.TableMetadata, error){
 	return d.metadataService.GetDatabaseMetadata(sheetId)
 }
 
