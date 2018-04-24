@@ -29,7 +29,7 @@ func (d DataService) GetFullData(sheetId string, tableName string) tables.FullTa
 
 func (d DataService) InsertData(sheetId string, unverifiedData tables.FullTable) error {
 	//todo verify against metadata
-	meta, err := d.metadataService.GetMetadata(sheetId, unverifiedData.GetTableName())
+	meta, err := d.metadataService.GetTableMetadata(sheetId, unverifiedData.GetTableName())
 	if err != nil {
 		return errors.New("Table was not found or metadata does not exist, double check the table name")
 	}
@@ -41,6 +41,14 @@ func (d DataService) InsertData(sheetId string, unverifiedData tables.FullTable)
 	}
 
 	return d.sheetsService.InsertRowsIntoTable(sheetId, d.convertToListTable(sheetId, unverifiedData))
+}
+
+func (d DataService) CreateTable(sheetId string, createTable metadata.TableMetadata) error {
+	return d.metadataService.CreateMetadata(sheetId, createTable)
+}
+
+func (d DataService) GetDatabaseMetadata (sheetId string) ([]metadata.TableMetadata, error){
+	return d.metadataService.GetDatabaseMetadata(sheetId)
 }
 
 func (d DataService) validateAgainstMetadata(tableMetadata metadata.TableMetadata, table tables.FullTable) error {
@@ -74,13 +82,13 @@ func (d DataService) validateRowAgainstMetadata(tableMetadata metadata.TableMeta
 }
 
 func (d DataService) convertToFullTable(sheetId string, table tables.Table) tables.FullTable {
-	meta, err := d.metadataService.GetMetadata(sheetId, table.GetTableName())
+	meta, err := d.metadataService.GetTableMetadata(sheetId, table.GetTableName())
 	LogIfPresent(err) //todo handle error better
 	return table.ToFullTable(meta)
 }
 
 func (d DataService) convertToListTable(sheetId string, fullTable tables.FullTable) tables.Table {
-	meta, err := d.metadataService.GetMetadata(sheetId, fullTable.GetTableName())
+	meta, err := d.metadataService.GetTableMetadata(sheetId, fullTable.GetTableName())
 	LogIfPresent(err) //todo handle error better
 	return fullTable.ToTable(meta)
 }

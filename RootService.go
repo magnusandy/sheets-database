@@ -7,7 +7,6 @@ import (
 	"sheets-database/infra"
 	"sheets-database/infra/configs"
 	"sheets-database/domain"
-	"sheets-database/domain/metadata"
 )
 
 type RootService struct {
@@ -17,7 +16,7 @@ type RootService struct {
 func initializeRootService() RootService {
 	authenticationService := infra.CreateRestAuthenticationService(configs.Config{})
 	sheetService := infra.CreateRestSheetService(authenticationService)
-	metadataService := metadata.CreateStubMetadata()
+	metadataService := infra.CreateRestMetadataService(authenticationService)
 	dataService := domain.CreateDataService(sheetService, metadataService)
 	api := api.CreateApi(dataService, authenticationService)
 	return RootService{api}
@@ -33,7 +32,7 @@ func main() {
 	http.HandleFunc("/submit-auth", root.api.SubmitAuthCodeHandler)
 	//remove-auth"
 
-	http.HandleFunc("/select", root.api.SelectHandler)
+	http.HandleFunc("/select", root.api.SelectHandler)//todo maybe should be a get
 	http.HandleFunc("/insert", root.api.InsertDataHandler)
 	//update
 	//delete
@@ -42,10 +41,12 @@ func main() {
 	//update-query
 	//delete-query
 
-	//create-table
+	http.HandleFunc("/create-table", root.api.CreateTableHandler)//create-table
 	//update-table
 
-	//metadata-json
+	http.HandleFunc("/database-info", root.api.GetDatabaseInfoHandler)
+
+	//table-info
 	//metadata html page
 
 	log.Fatal(http.ListenAndServe(":8080", nil))

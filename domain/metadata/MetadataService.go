@@ -7,7 +7,10 @@ import (
 const ID_COLUMN string = "id"
 
 type MetadataService interface {
-	GetMetadata(sheetId string, tableName string) (TableMetadata, error)
+	GetTableMetadata(sheetId string, tableName string) (TableMetadata, error)
+	GetDatabaseMetadata(sheetId string) ([]TableMetadata, error)
+	CreateMetadata(sheetId string, meta TableMetadata) error
+	UpdateMetadata(sheetId string, meta TableMetadata) error
 }
 
 //todo replace with real service
@@ -15,12 +18,24 @@ type StubMetadataService struct {
 	allMetadata map[string]map[string]TableMetadata //keyed by sheetid, and then tablename
 }
 
-func (m StubMetadataService) GetMetadata(sheetId string, tableName string) (TableMetadata, error) {
+func (m StubMetadataService) GetTableMetadata(sheetId string, tableName string) (TableMetadata, error) {
 	meta := m.allMetadata[sheetId][tableName]
 	if meta.GetTableName() == "" {
 		return meta, errors.New("Table metadata not found")
 	}
 	return meta, nil
+}
+
+func (m StubMetadataService) GetDatabaseeMetadata(sheetId string) ([]TableMetadata, error) {
+	return nil, nil
+}
+
+func (m StubMetadataService) SaveMetadata(sheetId string, meta TableMetadata) error {
+	return nil
+}
+
+func (m StubMetadataService) UpdateMetadata(sheetId string, meta TableMetadata) error {
+	return nil
 }
 
 func CreateStubMetadata() StubMetadataService {

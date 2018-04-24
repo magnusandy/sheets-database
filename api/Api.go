@@ -71,6 +71,31 @@ func (api Api) InsertDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (api Api) CreateTableHandler(w http.ResponseWriter, r *http.Request) {
+	dtoIn := in.CreateTableDto{}
+	readBodyIntoDto(r, &dtoIn)
+
+	err := api.dataService.CreateTable(dtoIn.SheetId, metadata.TableMetadata{})//todo actual dto
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func (api Api) GetDatabaseInfoHandler(w http.ResponseWriter, r *http.Request) {
+	dtoIn := in.GetDatabaseInfoDto{}
+	readBodyIntoDto(r, &dtoIn)
+
+	_, err := api.dataService.GetDatabaseMetadata(dtoIn.SheetId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+
 func renderTemplate(w http.ResponseWriter, fileName string, data interface{}) {
 	t, _ := template.ParseFiles("templates/" + fileName)
 	t.Execute(w, data)
