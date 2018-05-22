@@ -17,6 +17,7 @@ const META_KEY = "tableInfo"
 
 type RestMetadataService struct {
 	authService domain.AuthenticationService
+	//todo local cache of metadata
 }
 
 //todo split out
@@ -41,7 +42,7 @@ func (r RestMetadataService) CreateMetadata(sheetId string, meta metadata.TableM
 	if getMetaErr != nil {
 		return getMetaErr
 	}
-	if currentMeta == nil {//if there is no current metadata
+	if currentMeta == nil { //if there is no current metadata
 		currentMeta = map[string]metadata.TableMetadata{}
 	}
 	existingTable := currentMeta[meta.GetTableName()]
@@ -54,24 +55,57 @@ func (r RestMetadataService) CreateMetadata(sheetId string, meta metadata.TableM
 	//add new table to the current meta
 	currentMeta[meta.GetTableName()] = meta
 
-	dtoOut := dto.MetadataListDtoFromDomain(currentMeta)
-	dtoBytes, marshalErr := json.Marshal(dtoOut)
-	if marshalErr != nil {
-		return marshalErr
+   	deleteErr := r.deleteCurrentMetadata(sheetClient, sheetId)
+	if deleteErr != nil {
+		return deleteErr
 	}
 
-	//delete old meta
-	devMetaLookup := sheets.DeveloperMetadataLookup{MetadataId:META_ID}
+	saveErr := r.saveCurrentMetadata(sheetClient, sheetId, currentMeta)
+	if saveErr != nil {
+		return saveErr
+	}
+
+	return nil
+}
+
+func (r RestMetadataService) GetDatabaseMetadata(sheetId string) (map[string]metadata.TableMetadata, error) {
+	sheetClient, clientError := createSheetsClient(r.authService)
+	if clientError != nil {
+		return nil, clientError
+	}
+
+	resp, err := sheetClient.Spreadsheets.DeveloperMetadata.Get(sheetId, META_ID).Do()
+	log.Print("metadata Resp")
+ 	log.Print(resp.MetadataValue)
+	return nil, err//todo not nil
+}
+
+func (r RestMetadataService) UpdateMetadata(sheetId string, meta metadata.TableMetadata) error {
+	return nil
+}
+
+func (r RestMetadataService) deleteCurrentMetadata(sheetClient *sheets.Service, sheetId string) error {
+	devMetaLookup := sheets.DeveloperMetadataLookup{MetadataId:META_ID} //we always use a hardcoded meta id
 	dataFilter := sheets.DataFilter{DeveloperMetadataLookup:&devMetaLookup}
 	deleteDevMeta := sheets.DeleteDeveloperMetadataRequest{DataFilter:&dataFilter}
 	deleteRequest := sheets.Request{DeleteDeveloperMetadata:&deleteDevMeta}
 	deleteBatch := sheets.BatchUpdateSpreadsheetRequest{Requests:[]*sheets.Request{&deleteRequest}}
 	deleteResp, deleteErr := sheetClient.Spreadsheets.BatchUpdate(sheetId, &deleteBatch).Do()
 	if deleteErr != nil{
+		domain.LogIfPresent(deleteErr)
 		return deleteErr
 	}
 	log.Print("delete response")
 	log.Print(deleteResp)
+	return nil;
+}
+
+func (r RestMetadataService) createCreateDeveloperMetadataRequest(currentMeta map[string]metadata.TableMetadata) (sheets.Request, error){
+	dtoOut := dto.MetadataListDtoFromDomain(currentMeta)
+	dtoBytes, marshalErr := json.Marshal(dtoOut)
+	if marshalErr != nil {
+		return sheets.Request{}, marshalErr
+	}
 
 	location := sheets.DeveloperMetadataLocation{Spreadsheet:true}
 	devMeta := sheets.DeveloperMetadata{
@@ -82,25 +116,16 @@ func (r RestMetadataService) CreateMetadata(sheetId string, meta metadata.TableM
 		MetadataValue:string(dtoBytes),
 	}
 	createDevMeta := sheets.CreateDeveloperMetadataRequest{DeveloperMetadata:&devMeta}
-	request := sheets.Request{CreateDeveloperMetadata:&createDevMeta}
-	batchUpdate := sheets.BatchUpdateSpreadsheetRequest{Requests:[]*sheets.Request{&request}}
+	return sheets.Request{CreateDeveloperMetadata:&createDevMeta}, nil
+}
+
+func (r RestMetadataService) saveCurrentMetadata(sheetClient *sheets.Service, sheetId string, currentMeta map[string]metadata.TableMetadata) error {
+	createMetadataRequest, requestCreateError := r.createCreateDeveloperMetadataRequest(currentMeta)
+	if requestCreateError != nil {
+		return requestCreateError
+	}
+	batchUpdate := sheets.BatchUpdateSpreadsheetRequest{Requests:[]*sheets.Request{&createMetadataRequest}}
 	resp, err := sheetClient.Spreadsheets.BatchUpdate(sheetId, &batchUpdate).Do()
 	log.Print(resp)
 	return err
-}
-
-func (r RestMetadataService) GetDatabaseMetadata(sheetId string) (map[string]metadata.TableMetadata, error) {
-	sheetClient, clientError := createSheetsClient(r.authService)
-	if clientError != nil {
-		return nil, clientError
-	}
-
-	resp, err := sheetClient.Spreadsheets.DeveloperMetadata.Get(sheetId, 1).Do()
-	log.Print("metadata Resp")
-	log.Print(resp.MetadataValue)
-	return nil, err//todo not nil
-}
-
-func (r RestMetadataService) UpdateMetadata(sheetId string, meta metadata.TableMetadata) error {
-	return nil
 }

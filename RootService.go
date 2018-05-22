@@ -28,11 +28,15 @@ func main() {
 	//help
 	//stats
 
+	//GET
 	http.HandleFunc("/auth-link", root.api.CreateCredentialsHandler)
+	//GET
 	http.HandleFunc("/submit-auth", root.api.SubmitAuthCodeHandler)
 	//remove-auth"
 
+	//POST
 	http.HandleFunc("/select", root.api.SelectHandler)//todo maybe should be a get
+	//POST
 	http.HandleFunc("/insert", root.api.InsertDataHandler)
 	//update
 	//delete
@@ -44,6 +48,7 @@ func main() {
 	http.HandleFunc("/create-table", root.api.CreateTableHandler)//create-table
 	//update-table
 
+	//POST
 	http.HandleFunc("/database-info", root.api.GetDatabaseInfoHandler)
 
 	//create-database

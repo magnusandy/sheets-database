@@ -31,6 +31,11 @@ func (api Api) CreateCredentialsHandler(w http.ResponseWriter, r *http.Request) 
 	renderTemplate(w, "authLink.html", dto)
 }
 
+/*
+	GET
+	params:
+		- authCode: code received from Google from Create credentials
+ */
 func (api Api) SubmitAuthCodeHandler(w http.ResponseWriter, r *http.Request) {
 	var authCode string = r.URL.Query().Get("authCode")
 	if authCode != "" {
