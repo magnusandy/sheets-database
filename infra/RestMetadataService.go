@@ -42,6 +42,8 @@ func (r RestMetadataService) CreateMetadata(sheetId string, meta metadata.TableM
 	if getMetaErr != nil {
 		return getMetaErr
 	}
+	log.Print("currentMeta")
+	log.Print(currentMeta)
 	if currentMeta == nil { //if there is no current metadata
 		currentMeta = map[string]metadata.TableMetadata{}
 	}
@@ -74,10 +76,22 @@ func (r RestMetadataService) GetDatabaseMetadata(sheetId string) (map[string]met
 		return nil, clientError
 	}
 
-	resp, err := sheetClient.Spreadsheets.DeveloperMetadata.Get(sheetId, META_ID).Do()
+	resp, clientGetError := sheetClient.Spreadsheets.DeveloperMetadata.Get(sheetId, META_ID).Do()
+	if clientGetError != nil {
+		return nil, clientGetError
+	}
 	log.Print("metadata Resp")
  	log.Print(resp.MetadataValue)
-	return nil, err//todo not nil
+	return r.deserializeMetadataToDatabaseMetadata(sheetId, resp.MetadataValue)
+}
+
+func (r RestMetadataService) deserializeMetadataToDatabaseMetadata(sheetId string, jsonMetadata string) (map[string]metadata.TableMetadata, error) {
+	inDto := dto.MetadataListDto{}
+	unmarshalError := json.Unmarshal([]byte(jsonMetadata), &inDto)
+	if unmarshalError != nil {
+		return nil, unmarshalError
+	}
+	return inDto.ToDomain(sheetId), nil
 }
 
 func (r RestMetadataService) UpdateMetadata(sheetId string, meta metadata.TableMetadata) error {
